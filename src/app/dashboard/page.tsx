@@ -42,7 +42,7 @@ export default function Dashboard() {
 
       console.log('Fetching profiles for user:', user.id)
       const { data, error } = await supabase.rpc('get_potential_matches', {
-        user_id: user.id
+        input_user_id: user.id
       })
 
       if (error) {
@@ -82,11 +82,14 @@ export default function Dashboard() {
       // Record the swipe
       const { error: swipeError } = await supabase
         .from('swipes')
-        .insert([{
+        .upsert([{
           swiper_id: user.id,
           swiped_id: profileId,
           action
-        }])
+        }], {
+          onConflict: 'swiper_id,swiped_id',
+          ignoreDuplicates: false
+        })
 
       if (swipeError) throw swipeError
 

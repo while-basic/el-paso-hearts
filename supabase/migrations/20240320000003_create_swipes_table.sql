@@ -5,20 +5,45 @@ CREATE TABLE IF NOT EXISTS public.swipes (
     swiped_id UUID REFERENCES auth.users(id) ON DELETE CASCADE,
     action TEXT CHECK (action IN ('like', 'dislike')),
     created_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now()) NOT NULL,
+    updated_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now()) NOT NULL,
     UNIQUE(swiper_id, swiped_id)
 );
 
 -- Enable Row Level Security
 ALTER TABLE public.swipes ENABLE ROW LEVEL SECURITY;
 
--- Create policies (no need to drop first since table is new)
-CREATE POLICY "Users can view their own swipes"
-    ON public.swipes FOR SELECT
-    USING (auth.uid() = swiper_id);
+-- Drop existing policies if they exist
+DROP POLICY IF EXISTS "Users can view their own swipes" ON public.swipes;
+DROP POLICY IF EXISTS "Users can create their own swipes" ON public.swipes;
+DROP POLICY IF EXISTS "Users can update their own swipes" ON public.swipes;
 
-CREATE POLICY "Users can create their own swipes"
-    ON public.swipes FOR INSERT
+-- Create unified policy for all operations
+CREATE POLICY "Users can manage their own swipes"
+    ON public.swipes
+    FOR ALL
+    USING (auth.uid() = swiper_id)
     WITH CHECK (auth.uid() = swiper_id);
+
+-- Create trigger for updating updated_at timestamp
+CREATE OR REPLACE FUNCTION public.handle_swipes_updated_at()
+RETURNS trigger AS $$
+BEGIN
+    IF TG_OP = 'INSERT' THEN
+        NEW.created_at = timezone('utc'::text, now());
+        NEW.updated_at = timezone('utc'::text, now());
+    ELSIF TG_OP = 'UPDATE' THEN
+        NEW.updated_at = timezone('utc'::text, now());
+    END IF;
+    RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
+
+DROP TRIGGER IF EXISTS handle_swipes_updated_at ON public.swipes;
+
+CREATE TRIGGER handle_swipes_updated_at
+    BEFORE INSERT OR UPDATE ON public.swipes
+    FOR EACH ROW
+    EXECUTE FUNCTION public.handle_swipes_updated_at();
 
 -- Create function to check for matches
 DROP FUNCTION IF EXISTS public.check_match(uuid, uuid);
@@ -45,7 +70,8 @@ BEGIN
         VALUES 
             (swiper, swiped, 'matched'),
             (swiped, swiper, 'matched')
-        ON CONFLICT DO NOTHING;
+        ON CONFLICT (user_id, matched_user_id) 
+        DO UPDATE SET status = 'matched', updated_at = timezone('utc'::text, now());
     END IF;
     
     RETURN is_match;
