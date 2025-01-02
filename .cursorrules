@@ -1,0 +1,118 @@
+# Cursor Rules for El Paso Hearts Dating App
+
+# TypeScript Configuration
+*.ts linguist-language=TypeScript
+*.tsx linguist-language=TypeScript
+strict=true
+noImplicitAny=true
+noUnusedLocals=true
+noUnusedParameters=true
+
+# Import Rules
+import.sort.naturalOrder=true
+import.groupRules=[
+  "^react",
+  "^next",
+  "^@supabase/",
+  "^@/lib/",
+  "^@/components/",
+  "^@/hooks/",
+  "^@/types/",
+  "^[./]"
+]
+
+# Code Style
+indent.size=2
+max.line.length=100
+quotes.style=single
+semi=true
+trailingComma=es5
+bracketSpacing=true
+arrowParens=avoid
+jsxSingleQuote=false
+jsxBracketSameLine=false
+
+# Directory Structure
+src.directory=src
+components.directory=src/components
+pages.directory=src/app
+lib.directory=src/lib
+hooks.directory=src/hooks
+types.directory=src/types
+public.directory=public
+styles.directory=src/styles
+
+# Component Rules
+components.naming=PascalCase
+components.extension=tsx
+components.client.directive='use client'
+components.server.directive='use server'
+
+# Database Rules
+database.migrations.directory=supabase/migrations
+database.types.file=src/lib/database.types.ts
+
+# Authentication Rules
+auth.directory=src/app/auth
+auth.callback.route=src/app/auth/callback/route.ts
+auth.protected.routes=[
+  "src/app/dashboard/**/*",
+  "src/app/profile/**/*",
+  "src/app/matches/**/*",
+  "src/app/messages/**/*",
+  "src/app/settings/**/*"
+]
+
+# File Naming Conventions
+*.component.tsx=PascalCase
+*.page.tsx=PascalCase
+*.route.ts=camelCase
+*.util.ts=camelCase
+*.hook.ts=camelCase
+*.type.ts=PascalCase
+*.interface.ts=PascalCase
+*.context.tsx=PascalCase
+*.style.ts=camelCase
+*.test.ts=camelCase
+*.spec.ts=camelCase
+
+# Testing Configuration
+test.directory=src/__tests__
+test.pattern=**/*.{test,spec}.{ts,tsx}
+test.setup=src/__tests__/setup.ts
+
+# Environment Variables
+env.development=.env.development
+env.production=.env.production
+env.local=.env.local
+
+# Git Rules
+git.ignore=.gitignore
+git.hooks.directory=.husky
+
+# Package Management
+package.manager=npm
+dependencies.file=package.json
+lock.file=package-lock.json
+
+# Build Configuration
+build.output=.next
+build.command=npm run build
+dev.command=npm run dev
+
+# Linting and Formatting
+lint.command=npm run lint
+format.command=npm run format
+prettier.config=prettier.config.js
+eslint.config=.eslintrc.json
+
+# Documentation
+docs.directory=docs
+readme.file=README.md
+changelog.file=CHANGELOG.md
+
+# Security
+auth.protected=true
+api.rate.limit=true
+csrf.protection=true
+xss.protection=true 
